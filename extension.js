@@ -450,11 +450,11 @@ TaskBar.prototype = {
 
 		//Disconnect Workspace Signals
 		if (this.workspaceSwitchedId !== null) {
-			global.screen.disconnect(this.workspaceSwitchedId);
+			global.workspace_manager.disconnect(this.workspaceSwitchedId);
 			this.workspaceSwitchedId = null;
 		}
 		if (this.nWorkspacesId !== null) {
-			global.screen.disconnect(this.nWorkspacesId);
+			global.workspace_manager.disconnect(this.nWorkspacesId);
 			this.nWorkspacesId = null;
 		}
 
@@ -924,7 +924,7 @@ TaskBar.prototype = {
 	keyPreviousTask: function() {
 		this.previousTask = null;
 		let focusWindow = global.display.focus_window;
-		let activeWorkspace = global.screen.get_active_workspace();
+		let activeWorkspace = global.workspace_manager.get_active_workspace();
 		this.tasksList.forEach(
 			function(task) {
 				let [windowTask, buttonTask, signalsTask] = task;
@@ -947,7 +947,7 @@ TaskBar.prototype = {
 	keyNextTask: function() {
 		this.nextTask = false;
 		let focusWindow = global.display.focus_window;
-		let activeWorkspace = global.screen.get_active_workspace();
+		let activeWorkspace = global.workspace_manager.get_active_workspace();
 		this.tasksList.forEach(
 			function(task) {
 				let [windowTask, buttonTask, signalsTask] = task;
@@ -971,7 +971,7 @@ TaskBar.prototype = {
 	keyToggleDesktop: function() {
 		let maxWindows = false;
 		let userTime = null;
-		let activeWorkspace = global.screen.get_active_workspace();
+		let activeWorkspace = global.workspace_manager.get_active_workspace();
 		let windows = activeWorkspace.list_windows().filter(function(w) {
 			return w.get_window_type() !== Meta.WindowType.DESKTOP;
 		});
@@ -1160,8 +1160,8 @@ TaskBar.prototype = {
 		this.nWorkspacesId = null;
 		if (this.settings.get_boolean("display-workspace-button")) {
 			//Connect Workspace Changes
-			this.workspaceSwitchedId = global.screen.connect('workspace-switched', Lang.bind(this, this.updateWorkspaces));
-			this.nWorkspacesId = global.screen.connect('notify::n-workspaces', Lang.bind(this, this.updateWorkspaces));
+			this.workspaceSwitchedId = global.workspace_manager.connect('workspace-switched', Lang.bind(this, this.updateWorkspaces));
+			this.nWorkspacesId = global.workspace_manager.connect('notify::n-workspaces', Lang.bind(this, this.updateWorkspaces));
 			this.buttonWorkspace = new St.Button({
 				style_class: "tkb-task-button"
 			});
@@ -1183,9 +1183,9 @@ TaskBar.prototype = {
 	},
 
 	updateWorkspaces: function() {
-		this.activeWorkspaceIndex = global.screen.get_active_workspace().index();
+		this.activeWorkspaceIndex = global.workspace_manager.get_active_workspace().index();
 		let workspaceButtonWidth = this.settings.get_int("workspace-button-width");
-		this.totalWorkspace = global.screen.n_workspaces - 1;
+		this.totalWorkspace = global.workspace_manager.n_workspaces - 1;
 		let labelWorkspaceIndex = this.activeWorkspaceIndex + 1;
 		let labelTotalWorkspace = this.totalWorkspace + 1;
 		if (this.settings.get_enum("workspace-button-index") === 1) {
@@ -1711,13 +1711,13 @@ TaskBar.prototype = {
 		{
 			if (this.activeWorkspaceIndex === this.totalWorkspace)
 				this.activeWorkspaceIndex = -1;
-			let newActiveWorkspace = global.screen.get_workspace_by_index(this.activeWorkspaceIndex + 1);
+			let newActiveWorkspace = global.workspace_manager.get_workspace_by_index(this.activeWorkspaceIndex + 1);
 			newActiveWorkspace.activate(global.get_current_time());
 		} else if (numButton === RIGHTBUTTON) //Right Button
 		{
 			if (this.activeWorkspaceIndex === 0)
 				this.activeWorkspaceIndex = this.totalWorkspace + 1;
-			let newActiveWorkspace = global.screen.get_workspace_by_index(this.activeWorkspaceIndex - 1);
+			let newActiveWorkspace = global.workspace_manager.get_workspace_by_index(this.activeWorkspaceIndex - 1);
 			newActiveWorkspace.activate(global.get_current_time());
 		}
 	},
@@ -1725,7 +1725,7 @@ TaskBar.prototype = {
 	onClickDesktopButton: function(button, pspec) {
 		let maxWindows = false;
 		let userTime = null;
-		let activeWorkspace = global.screen.get_active_workspace();
+		let activeWorkspace = global.workspace_manager.get_active_workspace();
 		let windows = activeWorkspace.list_windows().filter(function(w) {
 			return w.get_window_type() !== Meta.WindowType.DESKTOP;
 		});
@@ -1806,7 +1806,7 @@ TaskBar.prototype = {
 
 	//Actions executed depending on button click on Task
 	clickActionMinMax: function(window, appname, index) {
-	    let activeWorkspace = global.screen.get_active_workspace();
+	    let activeWorkspace = global.workspace_manager.get_active_workspace();
 	    let focusWindow = global.display.focus_window;
 	    let nextApp = false;
 
@@ -1916,7 +1916,7 @@ TaskBar.prototype = {
 
 	                    windowsList = new PopupMenu.PopupMenuItem(title);
 	                    windowsList.connect('activate', Lang.bind(this, function() {
-	                        if (windowWorkspace !== global.screen.get_active_workspace())
+	                        if (windowWorkspace !== global.workspace_manager.get_active_workspace())
 	                            windowWorkspace.activate(global.get_current_time());
 	                        windowTask.activate(global.get_current_time());
 	                    }));
@@ -1972,13 +1972,13 @@ TaskBar.prototype = {
 				((scrollDirection === Clutter.ScrollDirection.DOWN) && (this.settings.get_enum("scroll-workspaces") === 2))) {
 				if (this.activeWorkspaceIndex === this.totalWorkspace)
 					this.activeWorkspaceIndex = -1;
-				let newActiveWorkspace = global.screen.get_workspace_by_index(this.activeWorkspaceIndex + 1);
+				let newActiveWorkspace = global.workspace_manager.get_workspace_by_index(this.activeWorkspaceIndex + 1);
 				newActiveWorkspace.activate(global.get_current_time());
 			} else if (((scrollDirection === Clutter.ScrollDirection.DOWN) && (this.settings.get_enum("scroll-workspaces") === 1)) ||
 				((scrollDirection === Clutter.ScrollDirection.UP) && (this.settings.get_enum("scroll-workspaces") === 2))) {
 				if (this.activeWorkspaceIndex === 0)
 					this.activeWorkspaceIndex = this.totalWorkspace + 1;
-				let newActiveWorkspace = global.screen.get_workspace_by_index(this.activeWorkspaceIndex - 1);
+				let newActiveWorkspace = global.workspace_manager.get_workspace_by_index(this.activeWorkspaceIndex - 1);
 				newActiveWorkspace.activate(global.get_current_time());
 			}
 		}
@@ -1989,7 +1989,7 @@ TaskBar.prototype = {
 			this.nextTask = false;
 			this.previousTask = null;
 			let focusWindow = global.display.focus_window;
-			let activeWorkspace = global.screen.get_active_workspace();
+			let activeWorkspace = global.workspace_manager.get_active_workspace();
 			let scrollDirection = event.get_scroll_direction();
 			if (((scrollDirection === Clutter.ScrollDirection.UP) && (this.settings.get_enum("scroll-tasks") === 1)) ||
 				((scrollDirection === Clutter.ScrollDirection.DOWN) && (this.settings.get_enum("scroll-tasks") === 2))) {
@@ -2043,7 +2043,7 @@ TaskBar.prototype = {
 		if (!this.resetHover) {
 			let focusWindow = global.display.focus_window;
 			let appname = Shell.WindowTracker.get_default().get_window_app(focusWindow).get_name();
-			let activeWorkspace = global.screen.get_active_workspace();
+			let activeWorkspace = global.workspace_manager.get_active_workspace();
 			this.tasksList.forEach(
 				function(task) {
 					let [windowTask, buttonTask, signalsTask] = task;
@@ -2207,7 +2207,7 @@ TaskBar.prototype = {
 	//Active Tasks
 	activeTasks: function(window) {
 		let active = false;
-		let activeWorkspace = global.screen.get_active_workspace();
+		let activeWorkspace = global.workspace_manager.get_active_workspace();
 		this.tasksList.forEach(
 			function(task) {
 				let [windowTask, buttonTask, signalsTask] = task;
@@ -2250,7 +2250,7 @@ TaskBar.prototype = {
 							let _app_name = Shell.WindowTracker.get_default().get_window_app(window).get_name();
 							let appname = Shell.WindowTracker.get_default().get_window_app(windowTask).get_name();
 							let workspaceTask = windowTask.get_workspace();
-							let activeWorkspace = global.screen.get_active_workspace();
+							let activeWorkspace = global.workspace_manager.get_active_workspace();
 							if ((_app_name === appname) && ((workspaceTask === activeWorkspace) || (this.settings.get_enum("sort-tasks") === 3)))
 								buttonTask.hide();
 						}
@@ -2392,7 +2392,7 @@ TaskBar.prototype = {
 			];
 			//Display Tasks of All Workspaces
 			if (!this.settings.get_boolean("tasks-all-workspaces")) {
-				let workspace = global.screen.get_active_workspace();
+				let workspace = global.workspace_manager.get_active_workspace();
 				if (!this.settings.get_boolean("tasks-all-workspaces")) {
 					buttonTask.visible = window.located_on_workspace(workspace);
                 }
